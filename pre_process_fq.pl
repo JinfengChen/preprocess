@@ -3,7 +3,7 @@ use Getopt::Long;
 use File::Basename;
 use FindBin qw ($Bin);
 
-GetOptions (\%opt,"list:s","output:s","help");
+GetOptions (\%opt,"list:s","output:s","project:s","help");
 
 
 my $help=<<USAGE;
@@ -15,8 +15,8 @@ Do vector trim and quality trim for Pair-end reads. Check before run: 1. full pa
 --output: output dir name for clean fastq
 
 Run shell (Use less memory, so it is easy to run):
-No need to convert path and use 3 lines
-perl /rhome/cjinfeng/software/bin/qsub-pbs.pl --lines 3 --convert no preprocess.sh
+No need to convert path and use 6 lines
+perl /rhome/cjinfeng/software/bin/qsub-pbs.pl --lines 6 --convert no preprocess.sh
 or 
 qsub preprocess.sh
 USAGE
@@ -28,6 +28,7 @@ if ($opt{help} or keys %opt < 1){
 
 $opt{output} ||= "fq_clean";
 $opt{output} ="$Bin/$opt{output}";
+$opt{project} ||= "1";
 
 my $Trimmomatic="/rhome/cjinfeng/software/tools/Trimmomatic-0.30";
 my $adaptor="/rhome/cjinfeng/HEG4_cjinfeng/fastq/errorcorrection/trim/adaptor.fa";
@@ -40,7 +41,7 @@ my $minqual=20;
 my $fqlist=readlist($opt{list});
 
 
-open OUT, ">preprocess.sh" or die "$!";
+open OUT, ">$opt{project}.preprocess.sh" or die "$!";
 foreach my $file (keys %$fqlist){
         print "$file\n";
         my $fqhead= $file=~/fastq$/ ? basename($file,".fastq") : basename($file,".fq");
@@ -53,7 +54,9 @@ foreach my $file (keys %$fqlist){
         my $trimvector="java -classpath $Trimmomatic/trimmomatic-0.30.jar org.usadellab.trimmomatic.TrimmomaticPE -phred33 -trimlog $opt{output}/$fqhead.log $fq1 $fq2 $opt{output}/$fq1head.trim.fq $opt{output}/$fq1head.trim.unpaired.fq $opt{output}/$fq2head.trim.fq $opt{output}/$fq2head.trim.unpaired.fq LEADING:0 TRAILING:0 ILLUMINACLIP:$adaptor:2:40:15 SLIDINGWINDOW:4:15 MINLEN:$minlen";
         my $trimqual  ="perl $trim --type 1 --qual-threshold $minqual --length-threshold $minlen --pair1 $opt{output}/$fq1head.trim.fq  --pair2 $opt{output}/$fq2head.trim.fq --outpair1 $opt{output}/$fq1head.clean.fq  --outpair2 $opt{output}/$fq2head.clean.fq  --single $opt{output}/$fqhead.clean.single.fq";       
         my $clean     ="rm $opt{output}/$fq1head.trim.unpaired.fq $opt{output}/$fq2head.trim.unpaired.fq $opt{output}/$fq1head.trim.fq $opt{output}/$fq2head.trim.fq";
-        print OUT "$trimvector\n$trimqual\n$clean\n";
+        my $gz        ="gzip $opt{output}/$fq1head.clean.fq\ngzip $opt{output}/$fq2head.clean.fq\ngzip $opt{output}/$fqhead.clean.single.fq";
+        
+        print OUT "$trimvector\n$trimqual\n$clean\n$gz\n";
 }
 close OUT;
 
