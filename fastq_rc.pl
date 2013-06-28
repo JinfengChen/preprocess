@@ -22,7 +22,7 @@ if ($opt{help} or keys %opt < 1){
 $opt{project} ||= "1";
 
 my $fqlist=readlist($opt{list});
-
+open OUT, ">$opt{project}.rc.sh" or die "$!";
 foreach my $file (keys %$fqlist){
            print "$file\n";
            my $cat = $file=~/gz$/ ? "zcat" : "cat";
@@ -36,11 +36,13 @@ foreach my $file (keys %$fqlist){
            $fh1=~s/\?/1/;
            $fh2=~s/\?/2/;
            print "$fq1\n$fq2\n$fh1\n$fh2\n";
-           #`$cat $fq1 | perl -e'while(<>){$h1 = $_;$s = <>;$h2 = <>;$q = <>;chomp $s;chomp $q;$s = reverse $s;$s =~ tr/ATCGNatcgn/TAGCNtagcn/;$q = reverse $q;print $h1.$s."\n".$h2.$q."\n";}' > $fh1`;
-           #`gzip $fh1`;
-           #`$cat $fq2 | perl -e'while(<>){$h1 = $_;$s = <>;$h2 = <>;$q = <>;chomp $s;chomp $q;$s = reverse $s;$s =~ tr/ATCGNatcgn/TAGCNtagcn/;$q = reverse $q;print $h1.$s."\n".$h2.$q."\n";}' > $fh2`;
-           #`gzip $fh2`;
+           my $c1="$cat $fq1 | perl -e'while(<>){\$h1 = \$_;\$s = <>;\$h2 = <>;\$q = <>;chomp \$s;chomp \$q;\$s = reverse \$s;\$s =~ tr/ATCGNatcgn/TAGCNtagcn/;\$q = reverse \$q;print \$h1.\$s.\"\\n\".\$h2.\$q.\"\\n\";}' > $fh1";
+           my $c2="gzip $fh1";
+           my $c3="$cat $fq2 | perl -e'while(<>){\$h1 = \$_;\$s = <>;\$h2 = <>;\$q = <>;chomp \$s;chomp \$q;\$s = reverse \$s;\$s =~ tr/ATCGNatcgn/TAGCNtagcn/;\$q = reverse \$q;print \$h1.\$s.\"\\n\".\$h2.\$q.\"\\n\";}' > $fh2";
+           my $c4="gzip $fh2";
+           print OUT "$c1\n$c2\n$c3\n$c4\n";
 }
+close OUT;
 
 #################
 

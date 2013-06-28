@@ -32,9 +32,9 @@ foreach my $file (keys %$fqlist){
            my $fqhead= $1 if $file=~/(.*)\.f.*q.gz$/;
            my $name  = basename($fqhead);
            $fqhead=~s/\?/\*/;
-           $fqhead.=".*";
+           $fqhead.=".*fq.gz";
            print "$fqhead\n";
-           my $cmd=`ls $fqhead | xargs zcat | awk '{if(NR%4==2){num++;len+=length($1)}}END{print num"\t"len/num"\t"len"\t"len/372000000}'`;
+           my $cmd=`ls $fqhead | sed 's/\@//' |  xargs zcat | awk '{if(NR%4==2){num++;len+=length($1)}}END{print num"\t"len/num"\t"len"\t"len/372000000}'`;
            chomp $cmd;
            my @sum=split("\t",$cmd);
            print OUT "$name\t$cmd\n";
@@ -42,8 +42,8 @@ foreach my $file (keys %$fqlist){
            my $fqhead= $1 if $file=~/(.*)\.f.*q$/;
            my $name  = basename($fqhead);
            $fqhead=~s/\?/\*/;
-           $fqhead.=".*";
-           my $cmd=`ls $fqhead | xargs cat | awk '{if(NR%4==2){num++;len+=length($1)}}END{print num"\t"len/num"\t"len"\t"len/372000000}'`; 
+           $fqhead.=".*fq";
+           my $cmd=`ls $fqhead | sed 's/\@//' | xargs cat | awk '{if(NR%4==2){num++;len+=length($1)}}END{print num"\t"len/num"\t"len"\t"len/372000000}'`; 
            chomp $cmd;
            my @sum=split("\t",$cmd);
            print OUT "$name\t$cmd\n";

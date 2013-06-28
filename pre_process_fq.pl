@@ -51,7 +51,7 @@ foreach my $file (keys %$fqlist){
         my $fq1head= $fq1=~/fastq$/ ? basename($fq1,".fastq") : basename($fq1,".fq");
         my $fq2head= $fq2=~/fastq$/ ? basename($fq2,".fastq") : basename($fq2,".fq");
         print "$fq1\n$fq2\n$fq1head\n$fq2head\n"; 
-        my $trimvector="java -classpath $Trimmomatic/trimmomatic-0.30.jar org.usadellab.trimmomatic.TrimmomaticPE -phred33 -trimlog $opt{output}/$fqhead.log $fq1 $fq2 $opt{output}/$fq1head.trim.fq $opt{output}/$fq1head.trim.unpaired.fq $opt{output}/$fq2head.trim.fq $opt{output}/$fq2head.trim.unpaired.fq LEADING:0 TRAILING:0 ILLUMINACLIP:$adaptor:2:40:15 SLIDINGWINDOW:4:15 MINLEN:$minlen";
+        my $trimvector="java -classpath $Trimmomatic/trimmomatic-0.30.jar org.usadellab.trimmomatic.TrimmomaticPE -phred33 -trimlog $opt{output}/$fqhead.log $fq1 $fq2 $opt{output}/$fq1head.trim.fq $opt{output}/$fq1head.trim.unpaired.fq $opt{output}/$fq2head.trim.fq $opt{output}/$fq2head.trim.unpaired.fq LEADING:0 TRAILING:0 ILLUMINACLIP:$adaptor:2:40:15 MINLEN:$minlen";
         my $trimqual  ="perl $trim --type 1 --qual-threshold $minqual --length-threshold $minlen --pair1 $opt{output}/$fq1head.trim.fq  --pair2 $opt{output}/$fq2head.trim.fq --outpair1 $opt{output}/$fq1head.clean.fq  --outpair2 $opt{output}/$fq2head.clean.fq  --single $opt{output}/$fqhead.clean.single.fq";       
         my $clean     ="rm $opt{output}/$fq1head.trim.unpaired.fq $opt{output}/$fq2head.trim.unpaired.fq $opt{output}/$fq1head.trim.fq $opt{output}/$fq2head.trim.fq";
         my $gz        ="gzip $opt{output}/$fq1head.clean.fq\ngzip $opt{output}/$fq2head.clean.fq\ngzip $opt{output}/$fqhead.clean.single.fq";
